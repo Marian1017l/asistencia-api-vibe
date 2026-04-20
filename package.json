@@ -1,0 +1,26 @@
+{
+  "name": "vibe-coding",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Marian1017l/asistencia-api-vibe.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Marian1017l/asistencia-api-vibe/issues"
+  },
+  "homepage": "https://github.com/Marian1017l/asistencia-api-vibe#readme",
+  "dependencies": {
+    "express": "^5.2.1",
+    "uuid": "^14.0.0"
+  }
+}
