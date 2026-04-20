@@ -1,0 +1,257 @@
+{
+  "info": {
+    "name": "Asistencia API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://asistencia-api-vibe-vc6k.onrender.com"
+    }
+  ],
+  "item": [
+    {
+      "name": "Estudiantes",
+      "item": [
+        {
+          "name": "Crear estudiante",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/estudiantes",
+              "host": ["{{base_url}}"],
+              "path": ["api", "estudiantes"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"EST00123\",\n  \"nombre\": \"Juan Pérez\",\n  \"email\": \"juan.perez@universidad.edu\",\n  \"programa\": \"Ingeniería de Sistemas\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Obtener todos los estudiantes",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/estudiantes",
+              "host": ["{{base_url}}"],
+              "path": ["api", "estudiantes"]
+            }
+          }
+        },
+        {
+          "name": "Obtener estudiante por ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/estudiantes/EST00123",
+              "host": ["{{base_url}}"],
+              "path": ["api", "estudiantes", "EST00123"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Asistencias",
+      "item": [
+        {
+          "name": "Registrar asistencia - presente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asistencias",
+              "host": ["{{base_url}}"],
+              "path": ["api", "asistencias"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estudianteId\": \"EST00123\",\n  \"fecha\": \"2026-04-20\",\n  \"estado\": \"presente\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Registrar asistencia - ausente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asistencias",
+              "host": ["{{base_url}}"],
+              "path": ["api", "asistencias"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estudianteId\": \"EST00123\",\n  \"fecha\": \"2026-04-19\",\n  \"estado\": \"ausente\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Registrar asistencia - justificada",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asistencias",
+              "host": ["{{base_url}}"],
+              "path": ["api", "asistencias"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estudianteId\": \"EST00123\",\n  \"fecha\": \"2026-04-18\",\n  \"estado\": \"justificada\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Historial de asistencia por estudiante",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/asistencias/estudiante/EST00123",
+              "host": ["{{base_url}}"],
+              "path": ["api", "asistencias", "estudiante", "EST00123"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reportes",
+      "item": [
+        {
+          "name": "Top 5 ausentismo",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/reportes/ausentismo",
+              "host": ["{{base_url}}"],
+              "path": ["api", "reportes", "ausentismo"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Validaciones (casos de error)",
+      "item": [
+        {
+          "name": "Error - ID estudiante inválido",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/estudiantes",
+              "host": ["{{base_url}}"],
+              "path": ["api", "estudiantes"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"INVALIDO\",\n  \"nombre\": \"Test Error\",\n  \"email\": \"test@test.com\",\n  \"programa\": \"Prueba\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Error - estado de asistencia inválido",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asistencias",
+              "host": ["{{base_url}}"],
+              "path": ["api", "asistencias"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estudianteId\": \"EST00123\",\n  \"fecha\": \"2026-04-20\",\n  \"estado\": \"tardanza\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Error - fecha futura",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asistencias",
+              "host": ["{{base_url}}"],
+              "path": ["api", "asistencias"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estudianteId\": \"EST00123\",\n  \"fecha\": \"2030-01-01\",\n  \"estado\": \"presente\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Error - registro duplicado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asistencias",
+              "host": ["{{base_url}}"],
+              "path": ["api", "asistencias"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estudianteId\": \"EST00123\",\n  \"fecha\": \"2026-04-20\",\n  \"estado\": \"presente\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Error - estudiante no encontrado",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/estudiantes/EST99999",
+              "host": ["{{base_url}}"],
+              "path": ["api", "estudiantes", "EST99999"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
