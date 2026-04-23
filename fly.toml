@@ -1,7 +1,10 @@
 app = "asistencia-api-vibe"
-primary_region = "mia"
+primary_region = "iad"
 
 [build]
+
+[env]
+  PORT = '3000'
 
 [http_service]
   internal_port = 3000
