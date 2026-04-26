@@ -5,7 +5,14 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "node --watch index.js"
+    "dev": "node --watch index.js",
+    "test": "jest --runInBand --forceExit"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/test/**/*.test.js"
+    ]
   },
   "repository": {
     "type": "git",
@@ -20,7 +27,10 @@
   },
   "homepage": "https://github.com/Marian1017l/asistencia-api-vibe#readme",
   "dependencies": {
-    "express": "^5.2.1",
-    "uuid": "^14.0.0"
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "jest": "^30.3.0",
+    "supertest": "^7.2.2"
   }
 }
