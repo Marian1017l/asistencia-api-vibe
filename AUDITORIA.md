@@ -178,11 +178,15 @@ curl -X POST http://localhost:3000/api/asistencias
 curl -X POST http://localhost:3000/api/asistencias
   -d '{"estudianteId":"EST99999","fecha":"2026-04-14","estado":"ausente"}'
 ```
-**Respuesta obtenida:** HTTP **409** (esperado: **404**)
+**Respuesta obtenida (antes del fix):** HTTP **409** (esperado: **404**)
+
+> **Corrección aplicada:** El servicio `registrarAsistencia` ahora incluye `statusCode` en el objeto de error y el controlador lo propaga. Después del fix devuelve correctamente HTTP 404.
+
+**Respuesta obtenida (después del fix):** HTTP 404
 ```json
-{"status":409,"success":false,"errors":"Estudiante con ID EST99999 no encontrado",...}
+{"status":404,"success":false,"errors":"Estudiante con ID EST99999 no encontrado","method":"PostAsistencia","response":null}
 ```
-**Resultado:** NO CUMPLE — el código correcto para "recurso no encontrado" es 404, no 409 (Conflict).
+**Resultado:** CUMPLE (tras corrección)
 
 ---
 
@@ -245,7 +249,7 @@ curl -X POST http://localhost:3000/api/asistencias
 ```json
 {"status":400,"success":false,"errors":"La fecha no es válida o es superior a la fecha actual",...}
 ```
-**Resultado:** CUMPLE — `isNaN(date.getTime())` detecta fechas imposibles.
+**Resultado:** CUMPLE — `isNaN(date.getTime())` detecta valores imposibles.
 
 ---
 
@@ -287,7 +291,78 @@ npm audit
 
 ---
 
-## Tabla de resultados
+## Pruebas automatizadas (Jest + Supertest)
+
+**Fecha de ejecución:** 2026-04-26
+**Comando:** `npm test`
+**Resultado general:** ✅ 29/29 pruebas pasaron
+
+### Resumen por suite
+
+| Suite | Pruebas | Resultado |
+|---|---|---|
+| `test/estudiante.test.js` | 9 | ✅ Todas pasaron |
+| `test/asistencia.test.js` | 14 | ✅ Todas pasaron |
+| `test/reporte.test.js` | 6 | ✅ Todas pasaron |
+
+### Detalle por prueba
+
+#### Estudiantes
+
+| # | Descripción | Status esperado | Status recibido | Resultado |
+|---|---|---|---|---|
+| 1 | Crear estudiante exitosamente | 201 | 201 | ✅ Pasó |
+| 2 | ID con formato inválido | 400 | 400 | ✅ Pasó |
+| 3 | Campos requeridos faltantes | 400 | 400 | ✅ Pasó |
+| 4 | ID duplicado | 409 | 409 | ✅ Pasó |
+| 5 | Body malformado (JSON inválido) | 400 | 400 | ✅ Pasó |
+| 6 | Validación correcta con DTO (campos persistidos) | 201 | 201 | ✅ Pasó |
+| 7 | Lista vacía cuando no hay estudiantes | 200 | 200 | ✅ Pasó |
+| 8 | Retornar todos los estudiantes registrados | 200 | 200 | ✅ Pasó |
+| 9 | Estudiante encontrado por ID | 200 | 200 | ✅ Pasó |
+| 10 | Estudiante no existe → 404 | 404 | 404 | ✅ Pasó |
+
+#### Asistencias
+
+| # | Descripción | Status esperado | Status recibido | Resultado |
+|---|---|---|---|---|
+| 11 | Registrar asistencia "presente" | 201 | 201 | ✅ Pasó |
+| 12 | Registrar asistencia "ausente" | 201 | 201 | ✅ Pasó |
+| 13 | Registrar asistencia "justificada" | 201 | 201 | ✅ Pasó |
+| 14 | Estado inválido (violación de enum) | 400 | 400 | ✅ Pasó |
+| 15 | Fecha futura | 400 | 400 | ✅ Pasó |
+| 16 | Asistencia duplicada (mismo estudianteId + fecha) | 409 | 409 | ✅ Pasó |
+| 17 | Estudiante no existe → 404 | 404 | 404 | ✅ Pasó* |
+| 18 | Campos requeridos faltantes | 400 | 400 | ✅ Pasó |
+| 19 | Body malformado (JSON inválido) | 400 | 400 | ✅ Pasó |
+| 20 | estudianteId con formato inválido | 400 | 400 | ✅ Pasó |
+| 21 | Historial completo del estudiante | 200 | 200 | ✅ Pasó |
+| 22 | Historial de estudiante inexistente → 404 | 404 | 404 | ✅ Pasó |
+| 23 | Estudiante sin asistencias → array vacío | 200 | 200 | ✅ Pasó |
+
+> *Prueba 17 detectó un bug: el controlador devolvía 409 en lugar de 404 para estudiante no encontrado. Se corrigió propagando el `statusCode` desde el servicio.
+
+#### Reportes
+
+| # | Descripción | Status esperado | Status recibido | Resultado |
+|---|---|---|---|---|
+| 24 | Lista vacía cuando no hay ausencias | 200 | 200 | ✅ Pasó |
+| 25 | Ranking con 1 estudiante y campos correctos | 200 | 200 | ✅ Pasó |
+| 26 | Máximo 5 estudiantes en el ranking (Top 5) | 200 | 200 | ✅ Pasó |
+| 27 | Ordenado de mayor a menor número de ausencias | 200 | 200 | ✅ Pasó |
+| 28 | No incluye "presente" ni "justificada" en el conteo | 200 | 200 | ✅ Pasó |
+| 29 | Incluye todos los estudiantes con ausencias hasta Top 5 | 200 | 200 | ✅ Pasó |
+
+### Correcciones aplicadas durante la ejecución de pruebas
+
+| Problema detectado | Corrección aplicada |
+|---|---|
+| `uuid@14` usa ESM y Jest no lo soporta en modo CommonJS | Reemplazado por `crypto.randomUUID()` nativo de Node.js |
+| `POST /api/asistencias` devolvía 409 cuando el estudiante no existía | Servicio ahora incluye `statusCode` en el objeto de error; el controlador lo propaga |
+
+---
+
+## Tabla de resultados consolidada
 
 | # | Aspecto | Criterio evaluado | Resultado | Cumple | No Cumple |
 |---|---------|-------------------|-----------|--------|-----------|
@@ -297,7 +372,7 @@ npm audit
 | 1d | Validación — enum estado | Solo acepta presente/ausente/justificada (T10) | Enum validado en middleware | X | |
 | 1e | Validación — campos requeridos | Rechaza cuerpos incompletos (T4, T13) | Mensajes descriptivos, HTTP 400 | X | |
 | 2a | Manejo errores — HTTP 400 | Entrada inválida devuelve 400 (T3, T4, T9, T10, T13, T17) | Correcto | X | |
-| 2b | Manejo errores — HTTP 404 | Recurso no encontrado devuelve 404 (T7, T15) | Correcto en GET; incorrecto en POST asistencia | | X |
+| 2b | Manejo errores — HTTP 404 | Recurso no encontrado devuelve 404 (T7, T12, T15) | Correcto tras fix en T12 | X | |
 | 2c | Manejo errores — HTTP 409 | Duplicados devuelven 409 (T2, T11) | Correcto | X | |
 | 2d | Manejo errores — HTTP 500 | Errores internos manejados con try/catch | Sin try/catch ni middleware global de errores | | X |
 | 2e | Manejo errores — ruta inexistente | Devuelve JSON estándar en rutas no definidas (T18) | Devuelve HTML con mensaje de Express crudo | | X |
@@ -309,12 +384,12 @@ npm audit
 | 4b | Datos sensibles — habeas data | Mecanismo para anonimizar/eliminar datos | Sin ningún control de privacidad | | X |
 | 5a | Estructura — separación de capas | Rutas, controladores, servicios separados | Arquitectura en capas correcta (routes/controllers/services/dtos) | X | |
 | 5b | Estructura — nombres descriptivos | Identificadores claros y en idioma consistente | Nombres descriptivos en español | X | |
-| 6a | Dependencias — necesarias | Paquetes justificados | Solo `express` y `uuid`, ambos necesarios | X | |
+| 6a | Dependencias — necesarias | Paquetes justificados | Solo `express`, `uuid` reemplazado por `crypto` nativo | X | |
 | 6b | Dependencias — vulnerabilidades | `npm audit` sin hallazgos (T21) | 0 vulnerabilidades | X | |
 | 7a | Configuración — puerto | Puerto via variable de entorno | `process.env.PORT \|\| 3000` correcto | X | |
 | 7b | Configuración — `.env.example` | Plantilla de variables de entorno | No existe `.env.example` | | X |
 | 8  | Idempotencia — duplicados | Impide registrar dos asistencias mismo estudiante+fecha (T11) | Verificación en servicio, retorna 409 | X | |
-| 9  | Pruebas automatizadas | Archivos de test (unit/integration/e2e) | Cero pruebas, sin dependencias de testing | | X |
+| 9  | Pruebas automatizadas | Archivos de test con Jest + Supertest | 29 pruebas, 29 pasaron (100%) | X | |
 | 10a | Documentación — README | Instrucciones para ejecutar el proyecto | README vacío | | X |
 | 10b | Documentación — comentarios | Comentarios útiles en código no obvio | Sin comentarios en ningún archivo | | X |
 
@@ -324,19 +399,17 @@ npm audit
 
 | Estado | Cantidad |
 |--------|----------|
-| **CUMPLE** | **15** |
-| **NO CUMPLE** | **11** |
+| **CUMPLE** | **16** |
+| **NO CUMPLE** | **10** |
 
 ### Problemas críticos (alta prioridad)
 
-1. **T12 — Código HTTP incorrecto**: `POST /api/asistencias` con estudiante inexistente responde 409 en lugar de 404. El servicio `registrarAsistencia` retorna error de "not found" pero el controlador lo mapea siempre como 409.
-2. **T18/T20 — Sin middleware global de errores**: Rutas no definidas y JSON malformado devuelven HTML con stack traces internos expuestos, lo que filtra rutas del sistema operativo.
-3. **Sin autenticación**: Cualquier cliente puede leer, crear y consultar datos de todos los estudiantes.
-4. **Sin CORS**: Peticiones desde navegadores en otros dominios fallarán o serán irrestrictas según configuración del cliente.
+1. **T18/T20 — Sin middleware global de errores**: Rutas no definidas y JSON malformado devuelven HTML con stack traces internos expuestos, lo que filtra rutas del sistema operativo.
+2. **Sin autenticación**: Cualquier cliente puede leer, crear y consultar datos de todos los estudiantes.
+3. **Sin CORS**: Peticiones desde navegadores en otros dominios fallarán o serán irrestrictas según configuración del cliente.
 
 ### Problemas moderados
 
-5. Sin `try/catch` en controladores — una excepción no controlada derrumba el servidor.
-6. Sin rate limiting — vulnerable a abuso y denegación de servicio.
-7. README vacío — no hay instrucciones de instalación ni uso.
-8. Sin pruebas automatizadas.
+4. Sin `try/catch` en controladores — una excepción no controlada derrumba el servidor.
+5. Sin rate limiting — vulnerable a abuso y denegación de servicio.
+6. README vacío — no hay instrucciones de instalación ni uso.
