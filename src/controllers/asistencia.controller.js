@@ -14,7 +14,7 @@ const postAsistencia = (req, res) => {
   const dto = new CreateAsistenciaDto({ estudianteId, fecha, estado });
   const result = registrarAsistencia(dto);
 
-  if (result.error) return sendError(res, 'PostAsistencia', result.error, 409);
+  if (result.error) return sendError(res, 'PostAsistencia', result.error, result.statusCode);
   sendSuccess(res, 'PostAsistencia', result.data, 201);
 };
 
