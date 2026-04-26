@@ -1,4 +1,9 @@
 const estudiantes = [];
 const asistencias = [];
 
-module.exports = { estudiantes, asistencias };
+const resetDatabase = () => {
+  estudiantes.splice(0);
+  asistencias.splice(0);
+};
+
+module.exports = { estudiantes, asistencias, resetDatabase };
